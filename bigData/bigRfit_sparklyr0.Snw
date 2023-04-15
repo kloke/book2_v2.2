@@ -1,0 +1,170 @@
+\section{One-step Wilcoxon Estimate using sparklyr}
+\label{S:1stepWsparklyr}
+
+In this section we illustrate a one-step Wilcoxon rank-based estimation for a linear regression problem using \verb|sparklyr|.
+
+<<echo=FALSE>>=
+library(sparklyr)
+library(dplyr)
+library(Rfit)
+library(data.table)
+library(bigRfit)
+@
+
+<<echo=F>>=
+#source('R/scoresMethods.R')
+@
+
+
+We use our simulated dataset \verb|data/xy7.csv| again which is read into a spark data frame in the next code segment.  
+<<>>=
+library(sparklyr)
+library(dplyr)
+sc <- spark_connect(master = "local")
+d <- spark_read_csv(sc,path='./data/xy7.csv')
+@
+
+%Set up our vector assembler and center the design matrix.
+In the following code segment we create a spark data frame which includes a column for the centered design matrix combined into lists and a column for our response.
+Recall the names of the predictor variables is \verb|X1|, $\ldots$, \verb|X8|.
+The function \verb|ft_vector_assembler| 
+is used to combine the values of the predictor variable into a vector (list) for each row in the data.
+The function \verb|ft_standard_scalar| is used to center the design matrix similar to how \verb|scale| in core R is used to center the design matrix in \verb|rfit|.
+
+<<>>=
+xnames <- paste0('X',1:8)
+d <- ft_vector_assembler(d,input_cols=xnames,output_col='xv')
+df1 <- ft_standard_scaler(d,input_col='xv',output_col='xvc',
+                          with_mean=TRUE,with_std=FALSE)
+df1 <- select(df1,'xvc','y')
+df1
+@
+
+In the next chunk, we obtain a least squares fit which will be used as our initial fit.
+<<>>=
+fitLS <- ml_linear_regression(df1,
+                              features_col='xvc',
+                              label_col='y',
+                              standardization=FALSE,
+                              prediction_col='yhatLS')
+betahatLS <- coef(fitLS)
+betahatLS
+@
+
+Note, alternatively, one could use the \verb|model| argument as illustrated in the following.
+%\footnote{The second argument of \texttt{ml_linear_regression} is the \texttt{model} argument.}
+<<label=mlreg2>>=
+ml_linear_regression(df1,y~xvc,fit_intercept=FALSE,
+                     standardization=FALSE) %>% coef()
+@
+In the next chuck the \verb|ml_summary| function is used to obtain the standard errors of the estimated regression coefficients and the estimate of residual standard deviation.
+<<>>=
+seLS <- ml_summary(fitLS)$coefficient_standard_errors()
+sigmahat <- ml_summary(fitLS)$root_mean_squared_error
+@
+
+Next, calculate the least squares fitted values and residuals to be used as initial fits for the rank-based fit.
+<<>>=
+pred0 <- ml_predict(fitLS,df1)  # initial fitted values
+pred0 <- mutate(pred0,residLS=y-yhatLS)  # initial residuals
+pred0
+@
+
+Next we get ready to calculate the step scores by bining the residuals.
+<<>>=
+B <- 1000  # number of bins
+pred <- ft_quantile_discretizer(pred0,'residLS','bin',
+                                num_buckets=B)
+pred
+@
+
+In the next, we calculate the bin counts and approximate the midpoint.
+\verb|dplyr| is used and since \verb|pred| is a spark data frame the computation
+is executed in spark.  The result is scored in \verb|bc|, a spark data frame.
+<<>>=
+bc <- pred %>% group_by(bin) %>% 
+      summarize(count=n(),m=0.5*(max(residLS)+min(residLS)))
+@
+
+<<eval=F,include=FALSE,echo=FALSE>>=
+scoreMat <- data.table(sdf_collect(bc))
+scoreMat[,rnkH := cumsum(count)]
+scoreMat[,rnkL := rnkH-count+1]
+n <- scoreMat[.N,rnkH]
+#scoreMat[, `:=`(rnkH=rnkH/(n+1),rnkL=rnkL/(n+1))]
+scoreMat[,scrs := 0.5*(getScoresNS(scores,rnkH/(n+1))+getScoresNS(scores,rnkL/(n+1)))]
+@
+
+
+In the next, the data are read from spark into R using the command \verb|sdf_collect|.
+We convert the returned data to a \verb|data.table| right away and then use steps similar to Section~\ref{SS:data.table}.
+<<>>=
+scoreMat <- data.table(sdf_collect(bc))
+@
+
+The next segment is similar to the Section~\ref{SS:data.table}.
+<<results=hide>>=
+scores <- wscores #use Wilcoxon scores
+scoreMat <- scoreMat[order(bin)]
+scoreMat[,rnkH := cumsum(count)]
+n <- scoreMat[.N,rnkH]
+@
+The sample size will now be available in the variable \verb|n| (as it is the value of the highest rank).
+
+The remaining steps in the calcuation of the step scores are the same as in \ref{SS:data.table}.
+<<results=hide>>=
+scoreMat[,scrs := 0.5*(getScoresNS(scores,rnkH/(n+1))+
+                  getScoresNS(scores,(rnkH-count+1)/(n+1)))]
+# center the scores
+sbar <- scoreMat[,sum(count*scrs)/n]
+scoreMat[,scrs := scrs - sbar]
+# scale the scores
+sd <- sqrt(scoreMat[,sum(scrs*scrs*count/(n+1)) ])
+scoreMat[,scrs := scrs / sd]
+@
+<<echo=FALSE,results=hide>>=
+scoreMat[,scrsD := 0.5*(getScoresDerivNS(scores,rnkH/(n+1))+
+                   getScoresDerivNS(scores,(rnkH-count+1)/(n+1)))/sd]
+@
+
+In the following we calculate a Newton step.
+In the following, we use {\em old-school} nested function calls rather then the \verb|migrittr| $\verb|%>|$.
+<<results>>=
+pred <- select(
+          left_join(pred,scoreMat[,c('bin','scrs')],
+                    by='bin',copy=TRUE),
+          xvc,'y','residLS','scrs')
+pred
+fit1 <- ml_linear_regression(pred,
+                             features_col='xvc',
+                             label_col='scrs',
+                             standardization=FALSE,
+                             prediction_col='ahat')
+predR1 <- ml_predict(fit1,pred)
+
+tauhat0 <- approxtauDT(scoreMat,scoreMat[['m']],n)
+
+predR1 <- mutate(predR1,d=-1*tauhat0*ahat)    # direction
+predR <- mutate(predR1,residR = residLS + d) # Newton step
+@
+At this point \verb|predR| is a spark data frame which contains the estimated residuals.
+In the next segment we calculate the fitted values and regression coefficents.
+We also present a simple way to calculate the standard errors of the regression coefficients.
+Note: we have not estimated an intercept for the Wilcoxon analysis.
+
+<<>>=
+predR <- mutate(predR,yhatR = y-residR)
+
+fitR <- ml_linear_regression(predR,
+                             features_col='xvc',
+                             label_col='yhatR',
+                             standardization=FALSE)
+
+betahatR <- coef(fitR)
+tauhat0/sigmahat
+seR <- seLS[-1]/sigmahat*tauhat0
+
+coef <- cbind(betahatR,seR)
+round(coef,4)
+@
+

@@ -1,0 +1,30 @@
+\subsection{Big Rfit Algorithm}
+\label{sect:BigRfit}
+%{\bf NEEDS EDIT}
+%Our current big data algorithm  for rank-based fits and analyses is  called \verb|BigRfit|.
+The algorithm for computing the rank-based estimates is an iterative Newton-type algorithm (see \citet*{bigRfitpaper}; \citet{hm11}).
+
+Implementation of developmental (at the time of writing) versions are discussed further at: 
+ \verb|github.com/kloke/bigRfit|.
+Currently, we consider the primary interface to be \verb|bigRreg|.
+The package
+\texttt{data.table} \citep{data.table}
+is used for binning the residuals once the \verb|cut|s have been made as well as scores calculations. 
+This algorithm is illustrated in Subsection~\ref{SS:data.table}
+Main concepts of the \verb|bigRreg| interface are outlined in Section~\ref{S:bigRreg}.
+A one-step estimate using 
+\texttt{sparklyr} \citep*{sparklyr}
+is outlined in Section~\ref{S:1stepWsparklyr}.
+%The default score function is the Wilcoxon linear score function which results in an analysis with 95\% efficiency relative to the LS analysis when the random errors of the model have a normal distribution.
+%Other score functions, though, can be selected including those in the package \verb|Rfit|.
+
+The software, \verb|bigRreg|, employs the step score function corresponding to the score function selected.
+In the next section, we discuss the number of bins in terms of efficiency which indicates about 100 bins is sufficient, however,
+with massive data sets in mind, we have set the default number of bins at 1000.
+For the associated analysis (e.g., 95\% confidence intervals), the software uses the estimates of the scale parameters provided in expressions (\ref{E:bingamma}) and (\ref{bdtauS}).
+
+%We are developing an R package \texttt{bigRfit} for this algorithm.
+%A developmental version of the package is available at \texttt{https://github.com/kloke/bigRfit}.
+%In the short time study presented in Section \ref{sect:ts}, for the big data situations its computation time is in the ``ballpark'' of the time for LS computation.
+%We are also in the process of developing a \texttt{sparklyr} \citep*{sparklyr} implementation
+%which makes use of the \texttt{dplyr} \citep*{dplyr} interface to the spark dataframes.

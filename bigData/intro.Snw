@@ -1,0 +1,29 @@
+In this Chapter we introduce some basic concepts of big data and revisit some analyses discussed in earlier Chapters using big data specific software.  In particular, big data implementation for our usual linear regression model, introduced in Chapter~\ref{C:regress}, is considered.
+We begin with a discussion of a rank-based estimation algorithm intended to be used for big data.
+Following that, we go over some general R packages that are suited for big data.
+Next we cover some of the computational aspects for implementing rank-regression model fitting in a big data setting and provide example useage of our R package \verb|bigRfit|.
+We close by
+discussing what is one of the main software tools for big data analytics, spark, as well as an R interface to spark, \verb|sparklyr| \citep{sparklyr}.
+%We also touch on graphics for big data using the \verb|dbplot| package in R.
+%Our discussion then continues with rank-based methods for linear models in a big data setting.
+%We also continue our discussion of tree models using spark and the sparklyr interface to be used in big data settings.
+%It is likely that many will find the R used in this chapter more advance than in previous chapters. 
+
+Over the years there has been some debate as to what constitutes {\em big data}.
+Currently, there seems to be some consensus around the definition:
+too big to fit in memory (RAM) on a single machine (i.e.\ computer).
+A solution to this problem is to distribute the data over a set of machines; i.e.\ use a cluster of compute nodes.
+While, in a production setting, one will likely make use of a cluster, it is also possible to run spark on a single local machine.\footnote{In the development of this book, this was the approach taken.}
+%Running on a local machine is a good way to get familiar with the software.\footnote{In the development of this book, this was the approach taken.}
+
+%There are several interfaces to Spark, including PySpark, SparkR, and sparklyr.  We make use of the sparklyr \citep{sparklyr} R interface to Spark.
+%General references to Spark include  {\em Spark the Definitive Guide} \citep{sparkbook} and {\em Learning Spark} \citep{learnsparkbook}.
+%As the software is constantly being developed, it is recommend to refer to the official spark documentation \texttt{spark.apache.org}.
+%{\em Mastering Spark with R} \citep{sparklyrbook} offers an introduction to using the \verb|sparklyr| \citep{sparklyr} package.
+
+%From an end-user's perspective, Apache Spark\footnote{\texttt{spark.apache.org/docs/latest/sparkr.html}} simplifies the task computing with distributing data through the use of resilient distributed datasets (RDDs).
+%Using map reduce the individual machines or worker nodes are able to process the data in parallel.
+%Spark may be downloaded from the Apache Spark website or installed through \verb|sparklyr| functions;
+%see Chapter 2 of \citet{sparklyrbook} for more information.
+
+%{\bf NOTE: in this Chapter we have edited some of the output in the code chunks in hopes of making the material more clear.}

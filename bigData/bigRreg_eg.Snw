@@ -1,0 +1,7 @@
+\begin{example}[xy7 (continued)]
+In the following code chunk we demonstrate the useage of \verb|bigRreg| on the \verb|xy| dataset generated in Example~\ref{eg:xy7}.
+<<>>=
+fitR <- bigRreg(f_,data=xy)
+print(summary(fitR),digits=4)
+@
+\end{example}

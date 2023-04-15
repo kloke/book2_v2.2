@@ -1,0 +1,136 @@
+\section{Spark Basics}
+
+Spark was designed for large-scale data processing and can be run on a single computer or on a large cluster of compute nodes.
+When run with multiple cores (or on multiple nodes) data are able to be processed in parallel.
+There are several interfaces to Spark, including PySpark, SparkR, and sparklyr.  
+We make use of the \verb|sparklyr| \citep{sparklyr} R interface to Spark.
+General references to Spark include  {\em Spark the Definitive Guide} \citep{sparkbook} and {\em Learning Spark} \citep{learnsparkbook}.
+As the software is constantly being developed, it is recommend to refer to the official spark documentation \texttt{spark.apache.org}.
+{\em Mastering Spark with R} \citep{sparklyrbook} offers an introduction to using the \verb|sparklyr| \citep{sparklyr} package.
+See also \texttt{spark.rstudio.com}.
+
+In the production big data setting --- where the size of the input data is larger than a single computer can handle --- a cluster of machines or nodes are connected.
+%In a production setting, one will likely use a cluster of compute nodes.
+Those without access to a cluster may still become familiar with the these tools and try out the methods in this section using a single machine.
+%ning on a local machine is a good way to get familiar with the software.\footnote{In the development of this book, this was the approach taken.}
+Spark may be downloaded from the Apache Spark website or installed through \verb|sparklyr| functions;
+see Chapter 2 of \citet{sparklyrbook} for more information.
+%In this section we assume the reader has \verb|sparklyr| installed as well as a Spark installation.
+
+Under the hood, Apache Spark\footnote{\texttt{spark.apache.org/docs/latest/sparkr.html}} uses {\em resilient distributed datasets (RDDs)} where, in a cluster setting, the data are distributed across the nodes and may be processed in parallel.\footnote{\texttt{spark.apache.org/docs/latest/rdd-programming-guide.html}}  In addition, the use of RDDs allow for one node to fail without crashing the entire system; i.e., resiliency.
+We will primarilty use spark data frames which are built on top of RDDs and are conceptually similar to R data frames.
+
+% {\bf NOTE: in this Chapter we have edited some of the output in the code chunks in hopes of making the material more clear.}
+
+
+%As already mentioned, there are several interfaces to Spark, however we focs on sparklyr \citep{sparklyr} R interface to Spark.
+%Spark allows the analyst to efficiently and robustly (computationally\footnote{Efficent and robust in terms of computational speed and stability.  See spark references for information.})
+%\verb|sparklyr| is an R interface to Spark and a cluster.
+%This user unzipped the file downloaded directly from the spark foundation website and created an alias --- sparklyr was able to find the installation and set set \verb|$spark_home|.
+
+%In the next code segment we simulate a dataset and write it to disk (be sure to check write permissions of the directory you plan to write to).
+%We will use this dataset again in the Chapter.
+
+%\begin{exercise}
+%Check the size of the file d.csv.
+%\end{exercise}
+
+In the next code chunk we read our data file created in Section~\ref{SS:freadfwrite} \verb|xy7.csv| into a spark dataset.
+%In practice, since the majority of the time data is too large to fit into memory, data will be read from disk.  
+%The reader is encouraged to find their own big dataset see Exercise???.
+First a connection to spark is requested using the command \verb|spark_connect|.
+The connection may be configured in terms amount of cluster resources (e.g., cpus, memory); in our example use use the default options but specify the our local machine is used via the \verb|master| argument.
+The option, \verb|inferSchema=TRUE| specifies that the data types should be inferred.  The data types are printed following the column names; i.e. \verb|<int>| for integer and \verb|<dbl>| for double precision (floating point).
+So, in our case, the data types were correctly inferred.
+
+%\begin{exercise}
+%Big data repository.
+%Check UCI.
+%\end{exercise}
+
+<<>>=
+library(sparklyr)
+sc <- spark_connect(master='local')
+d <- spark_read_csv(sc,'data/xy7.csv',header=TRUE,
+                    inferSchema=TRUE)
+d
+@
+
+The data displayed are in the form of a tibble with an unknown number of rows.  This is because the dataset is a spark data frame and not stored in R.
+When we request the object \verb|d| be printed, a few rows of the dataset are returned to R and then printed in the form of a tibble.
+Notice in the print of \verb|d|, \verb|...| is displayed as the number or rows in \verb|d|.
+The majority of the data remain in a spark data frame; so that, in particular, the number or records in the dataset is unknown to R at this point. 
+It is recommended that data read into R from spark data frames be limited, if possible.
+
+Note: \verb|sc| may be printed out the way many R objects can be.  The reader is encouraged to print \verb|sc| out and look at the contents.  
+Among other cluster configuration details, listed are the number of cores allocated to the instance of the spark cluster, the memory (ram), number of partitions.
+
+In the following section we return summaries (e.g., bin counts) from spark into R and use the score calculations via \verb|data.table| discussed in Section~\ref{SS:data.table}.
+Note: the \verb|dplyr| data wrangling tools work with a spark data frame, sending the request to spark which performs the operation (on the distributed dataset) and creates a new spark dataframe.
+So that computations occurs outside of R and the datasets remain outside of R unless a specific request to read into R is made.
+
+Next, we provide an overview of \verb|dbplot|.
+
+\subsection{\texttt{dbplot}}
+
+The package \verb|dbplot| \citep{dbplot} may be used for graphics of big datasets
+(e.g., in a SQL database or spark data frame).
+When used on a spark data frame via \verb|sparklyr|, the calculations of the summary statistics for the plot are performed in spark with the required summaries being sent back to R for graphing.  
+For big data this method is preferred as a relatively small amount of data (summary statistics) are then read into R for graphing instead of the entire dataset.
+Under the hood, the \verb|dplyr| \citep{dplyr} interface is used to create the summary statistics in spark and \verb|ggplot2| \citep{ggplot2} is used to create the graphic in R.
+
+As an example consider Figure~\ref{F:raster} were \verb|y| versus \verb|x1| from our data frame \verb|d| are plotted. 
+By default, a $100 \times 100$ grid is created and the number of records in each rectangle are counted (in spark) and then returned to R.  A graphic is then produced in R using \verb|ggplot2|.
+The number of observations in each rectangle is indicated using a grayscale with darker areas indicating a larger number of data points.
+No matter how large the dataset is in spark, only 100*100 observations would be returned (other resolutions are possible --- see \verb|help(dbplot_raster)|).  
+
+<<echo=FALSE>>=
+library(ggplot2)
+library(dbplot)
+my_raster_plot <- function(data,x,y, fill=n(),resolution=100,complete=FALSE) {
+  x <- enquo(x)
+  y <- enquo(y)
+  fillname <- enquo(fill)
+
+  df <- db_compute_raster(data=data,x=!!x,y=!!y,fill=n(),resolution=resolution,complete=complete)
+  colnames(df) <- c("x", "y", "fill")
+  ggplot(df) + theme_classic() + geom_tile(aes(x, y, fill = fill)) + labs(x = x, y = y) + 
+    scale_fill_continuous(name = fillname,low='gray80',high='gray1')
+
+}
+@
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[angle=-90]{graphics2/manual_raster1}
+\caption{Example raster plot.}
+\label{F:raster}
+\end{figure}
+
+
+\subsection{Machine Learning Tools}
+
+Spark,
+along with the \verb|sparklyr| interface,
+ offer a wide range of machine learning tools for distributed data.
+Modeling functions in \verb|sparklry| use a familiar syntax allowing the user to specify a \verb|model| which is convenient for data analysts coming to spark from R.
+For example, the function \verb|ml_random_forest| may be used to fit random forest models previously discussed with the data and computations in spark.
+There is functionality for data processing/wrangling.  
+The \verb|sparklyr| interface to spark includes functions which begin with \verb|ft_| for {\bf feature transformer}\index{Feature transformer}.
+Also, \verb|dplyr| \citep{dplyr} may be used to interface with spark using the well known data wrangling tool in \verb|tidyverse|.\footnote{www.tidyverse.org}
+There is functionality to create training and validation splits of a dataset
+as well as model selection tools implementing commonly used metrics.
+We illustrate some of the basics in the next section.
+Our goal is to provide a brief introduction to \verb|sparklyr| and illustrate the basics of a big data implementation of rank-regression.
+Least squares linear regression is fit using the function \verb|ml_linear_regression| which is used as an inital fit in the Wilcoxon one-step estimate calculated in the next section.
+
+
+\subsection{{spark\_disconnect}}
+
+To disconnect from spark use \verb|spark_disconnect| as illustrated in the following.
+<<>>=
+spark_disconnect(sc)
+@
+The spark process is closed with temporary spark datasets removed.
+In the next section we will start a new session and will reread the data into a spark data frame.
+

@@ -1,0 +1,172 @@
+\subsection{Examples}
+\label{sect:examp}
+%In this section we explore the SS fits of two datasets and  small simulation study using the sample size $N= 20,000,000$.
+%The first data consists of simulated data and the second is a real dataset.
+%For the real dataset, the ``correct'' estimates are also clear.
+%\subsection{Generated Data}
+%
+%For this example, we simulated a large dataset consisting of a million observations, $N=10^6$, and
+%$p=20$ predictor variables.
+%The model is given in expression (\ref{eq:lm}).
+%The random errors and the  elements in the design matrix  were drawn independently from a $N(0,1)$ distribution.
+%The regression parameters were all set to 0 except for $\beta_1$ which was set at $0.01$.
+%
+%We computed the LS fit and the rank-based fit using step scores which approximate the Wilcoxon scores
+%with 100 bins, $\mbox{SS}_W(100)$.
+%The left Panel of Table \ref{eg1citab} shows the estimates, standard errors, and 95\% confidence
+%intervals for $\beta_1$.
+%The LS and $\mbox{SS}_W(100)$ analyses are essentially the same and
+%both confidence intervals are successful.
+%The plot of the fitted values of the $\mbox{SS}_W(100)$ fit
+%versus the corresponding LS fitted values for cases 951 to 1050 is the plot in the upper left panel of Figure \ref{eg1fig1},
+% which presents further evidence of the closeness of the fits.
+%
+%\begin{figure}
+%\centering
+%\includegraphics[scale=0.55]{bigRfit/fitplt.pdf}
+%	\caption{Graphs of fitted values for the example with generated data.}
+%\label{eg1fig1}
+%\end{figure}
+
+%To demonstrate robustness of the $\mbox{SS}_W(100)$ we contaminated the first 1000 observations by
+%adding to them normal noise with mean 100 and standard deviation 1.
+%This rate of contamination, $100/10^6= 0.001$, is small
+%but the right panel of Table \ref{eg1citab} shows the disastrous effect it
+%has on the LS estimate of $\beta_1$.
+%The estimate has changed by 5.3 standard errors (SE based on the  original data) and the confidence
+%interval now shows insignificance for testing $\beta_1=0.0$.
+%On the other hand, the analysis of the $\mbox{SS}_W(100)$ fit of the contaminated data is essentially the same 
+%as for the original data.
+%The plots of the LS fitted values in Figure \ref{eg1fig2} show further evidence of the contamination effect on the LS fit.
+%We selected indices 951 to 1050 because the first 50 of the corresponding observations are
+%contaminated while the remaining are uncontaminated.
+%The lower left panel demonstrates that there is little difference in the $\mbox{SS}_W(100)$ fits for these datasets
+%but the lower right panel shows that the LS fit has changed for both the contaminated
+%and original observations.
+%The upper right panel clearly demonstrates that the LS and $\mbox{SS}_W(100)$ fits differ on the contaminated dataset.
+%
+%\begin{table}
+%\centering
+%\begin{tabular}{|l|c|c|c|c|c|c|}\hline
+%& \multicolumn{3}{|c|}{Original Data} & \multicolumn{3}{|c|}{Contaminated Data}\\ \hline
+%& $\widehat{\beta}_1$& SE & 95\% CI & $\widehat{\beta}_1$& SE & 95\% CI \\ \hline
+%	$\mbox{SS}_W(100)$ & 0.0109 & 0.0010 & $(0.0089, 0.0128)$& 0.0108&0.0010& $(0.0088, 0.0128)$ \\ \hline
+%LS & 0.0108 & 0.0009 & $(0.0088, 0.0128)$& 0.0060&0.0033& $(-0.0011, 0.0188)$ \\ \hline
+%\end{tabular}
+%	\caption{$\mbox{SS}_W(100)$ and LS estimates, standard errors, and 95\% confidence intervals for $\beta_1$.
+%The first four columns pertain to the original data while the remaining four pertain to the contaminated data.}
+%\label{eg1citab}
+%\end{table}
+%
+%Diagnostics for robust fits are discussed in \citet{msh90}; see, also, Chapter 3 of the monograph \citet{hm11}.
+%In particular the robust Studentized residuals perform well at detecting outliers.
+%Figure \ref{eg1fig2} presents the plot of these residuals versus cases 
+%951 to 1050.
+%The lines indicate the usual benchmarks $\pm 2$ used for outlier detection with Studentized residuals.
+%The outliers for cases 951 to 1000 standout in this plot.
+%The largest Studentized residual for the uncontaminated part is 4.8742 in absolute value.
+%No matter how large the dataset is,  these Studentized residuals can easily be perused for outlier detection.
+%
+%\begin{figure}
+%\centering
+%%\includegraphics[scale=0.55]{normal9.pdf}
+%\includegraphics[scale=0.55]{bigRfit/bigegplt.pdf}
+%        \caption{Studentized residuals of the $\mbox{SS}_W(100)$ fit versus the cases 951-1050.
+%	Cases 951-1000 are contaminated while cases 1001-1050 are not.}
+%\label{eg1fig2}
+%\end{figure}
+%
+\subsubsection{Taxicab Data}
+
+\citet{sh15} explored a large dataset consisting of taxicab fares for one day
+in New York City, Tuesday, January 15, 2013.
+He selected this dataset with very specific characteristics including:
+the standard city rate was used to determine the fare;
+the payment type was either credit card or cash;
+the rounded trip distance was less than 3 miles, where the rounding was down to the
+nearest $1/5$ mile;
+and the average trip speed was greater than or equal to 25 miles per hour (mph).
+The initial charge  for a fare is \$2.50 and then the standard rate is \$2.50 per mile.
+For slow traffic (less than 12 mph) the rate also includes a rate per time; but, the last condition
+eliminates such observations in the selected set.
+The are 49,800 observations in the dataset.
+The standard rate and the conditions imposed indicate that the model should be
+\begin{equation}
+	\label{taximod}
+	\mbox{median}(\mbox{Fareamount}) = 2.50 + 2.50(\mbox{RoundedTripDistance}).
+\end{equation}
+%The number of observations in the dataset is 49,800.
+
+Due to the predictors being rounded, there are only 15 possible values for them, (0 to 2.8
+in steps of 0.2).
+Figure \ref{figeg21} displays the comparison boxplots where
+the boxes correspond to the responses at each value of the predictor.
+Notice how narrow the boxes are around the medians.
+Furthermore, it is easy to show that the 15 medians versus the 15 values of the predictors
+follow the deterministic linear model specified in 
+equation (\ref{taximod}).
+There are some outliers but the bulk of the data follow this model (\ref{taximod}), also.
+Evidently, a robust fit should also follow this model.
+
+\begin{figure}
+\centering
+%\includegraphics[scale=0.55]{normal9.pdf}
+\includegraphics[scale=0.55]{graphics2/bpeg2}
+        \caption{Comparison boxplots of fare amounts at each value of the rounded trip distances
+	for the taxicab example.}
+\label{figeg21}
+\end{figure}
+
+
+\begin{table}
+\centering
+\begin{tabular}{|l|c|c|c|c|}\hline
+& $\widehat{\alpha}$& 95\% CI & $\widehat{\beta}$& 95\% CI \\ \hline
+	$\mbox{SS}_W(100)$ & 2.500 & $(2.500,2.500)$ & 2.500 & $(2.500,2.500)$ \\ \hline
+	W & 2.500 & $(2.499,2.500)$ & 2.500 & $(2.499,2.500)$ \\ \hline
+	LS & 2.276 & $(2.258,2.294)$ & 2.603 & $(2.592,2.613)$ \\ \hline
+	$\mbox{SS}_{ns}(100)$ & 2.500 & $(2.500,2.500)$ & 2.500 & $(2.500,2.500)$ \\ \hline
+\end{tabular}
+\caption{Table of estimates and 95\% confidence intervals for fits of the taxicab data.
+Where :
+$\mbox{SS}_W(100)$ means step scores for Wilcoxon; W means Wilcoxon scores; LS means least squares; $\mbox{SS}_{ns}(100)$ means step scores for normal scores.}
+\label{tabtax1}
+\end{table}
+
+The first three rows of Table~\ref{tabtax1} display the fitted regression coefficients of Wilcoxon fit, the simple
+scores $\mbox{SS}_W(100)$ fit approximating the Wilcoxon using 100 bins, and the LS fit, respectively.
+The intercept and slope estimates based on the Wilcoxon and $\mbox{SS}_W(100)$ fits are both 2.5
+with confidence intervals have length less than 1 penny (\$0.01).
+On the other hand, the LS estimates each differ from 2.5 with confidence intervals not capturing the true value.
+Hence, the rank-based fits follow the model while the LS fits do not.
+Clearly, the outliers affected the LS fit.
+ The fourth line in Table~\ref{tabtax1} shows the step scores estimates of the regression coefficients when the rank-based fit is based on step scores approximation of the normal scores.  The fit agrees with those of the other rank-based fits.
+
+\subsubsection{Simulation Study}
+
+Here we carryout a small simulation study using bigger datasets ($N$ = 20,000,000).
+We generate data from the following linear model
+\begin{equation}
+Y_i = 10 + \bx_i^T [1,0.25,0.25,0.25,0.25,0.05,0.05,0,0]^T + e_i
+\end{equation}
+where 
+the covariates were generated with
+$x_{i1} \sim U(-5,5)$ and
+$x_{i2},\ldots, x_{i9}$ from a multivariate normal distribution with mean vector $\bmu = \bzero$ and a compound symmetric variance covariance matrix with $\sigma = 1$ and $\rho = 0.2$.
+The error terms were generated from a standard normal distribution; i.e. $e_i \sim N(0,1)$.
+
+Two sets of simulations were carried out.  The first set were as described above and the second with $0.1\%$ of the data contaminated by multiplying the outcome variable by 100.  For each set the simulation size was 40.
+Estimates for least squares and a one-step Wilcoxon estimate (using $B=1000$ bins) were carried out using \verb|sparklyr| \citep{sparklyr} as discussed in Section~\ref{S:1stepWsparklyr}.
+The results are plotted in Figure~\ref{simeff}.
+The vertical axis is the ratio of the MSEs of the two estimates across the 40 studies and the horizontal axis is index of the regression coefficient.
+The scatterplot on the left is for the non-contaminated set and the scatterplot on the right is for the contaminated set.
+The horizontal line indicates the true ARE of Wilcoxon to least squares for normal errors ($3/\pi$).
+Based on these results we can see that, as is expected, with normal errors the least squares estimates are more efficient than the Wilcoxon estimates.  However, with contaminated samples the Wilcoxon estimates are more efficient.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.55]{graphics2/simeff}
+\caption{Results of a small simulation study to compare least squares and one-step Wilcoxon estimates with $B=1000$ bins.}  
+\label{simeff}
+\end{figure}
+

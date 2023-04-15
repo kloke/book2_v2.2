@@ -1,0 +1,138 @@
+\section{Approximate Scores}
+\label{S:bigData_scores}
+In this section, for our usual linear model, a rank-based estimation algorithm is outlined
+which does not require a full ranking, but instead depends on partitioning the residuals into bins.
+The fit and associated analyses lose little in terms of efficiency compared to that based
+on the full ranking of residuals even with a small number of bins (e.g. 20).
+%The decrease in computation time makes the algorithm suitable for estimation in big data settings.
+Details of the method are presented in the manuscript \citet*{bigRfitpaper}.
+
+Consider, again, the estimation
+of the regression coefficients of a linear model.
+Let $\bY$ be an $N \times 1$ vector of observations and assume it follows our usual the linear model
+\begin{equation}
+\label{eq:bd_lm}
+\bY = \alpha \bone + \bX \bbeta + \be,
+\end{equation}
+where $\bX$ is an $N \times p$ design matrix; $\bone$ is an $N \times 1$ vector of ones;
+$\be$ is an $N \times 1$ vector of random errors
+with probability density function  (pdf) $f(x)$ and cumulative distribution function (cdf) $F(x)$;
+$\alpha$ is the intercept parameter; and $\bbeta$ is $p \times 1$ vector of regression coefficients.
+For big data, $N$ may be in the millions or more.
+Ultimately, our goal is similar to that of Chapter~\ref{C:regress} in that we are interested in estimation and inference (esp. confidence intervals) on the parameter $\bbeta$ as well as diagnostics to assess the fit.  The interpretation is the same as in previous chapters --- the algorithm is that which differs.  We go over, in moderate detail, the key components of the algorithms for estimation of $\bbeta$ --- diagnostic procedures in a big data settng may be considered in future work.
+
+For estimation we use Jaeckel's dispersion function.  i.e., 
+\begin{equation}
+\label{eq:bd_jaeckel}
+\widehat{\bbeta}_\varphi = \mbox{Argmin}\|\bY -  \bX \bbeta \|_\varphi.
+\end{equation}
+The {\em pseudo-norm} $\| \cdot \|$ is given by
+\begin{equation}
+\label{eq:bd_pseudo}
+\| \bv\|_\varphi = \sum_{i=1}^N a[R(v_i)]v_i, \;\;\; \bv \in R^N,
+\end{equation}
+where $R(v_i)$ denotes the rank of $v_i$ among $v_1, v_2, \ldots, v_N$;
+the scores are $a_\varphi(i) = \varphi[i/(N+1)]$ with $\varphi$ the chosen score function.
+As before, the dispersion function is given by
+\begin{equation}
+\label{E:bd_disp}
+D(\bbeta) = \sum_{i=1}^N a[R(y_i - \bx_i^T \bbeta)] (y_i - \bx_i^T\bbeta).
+\end{equation}
+
+A full ranking may be avoided by approximating $\varphi(u)$ with a score function selected  from one of two classes:
+1. {\em Class I}, linear approximation, and 2. {\em Class II}, step score approximation, which we discuss in this section.
+
+Both types assume a partitioning based on the range of the residuals which we now define.
+Denote the initial estimate of $\bbeta$ by $\widehat{\bbeta}^{(0)}$ and let $\widehat{\be}^{(0)}$ denote
+the corresponding vector of residuals.  With the residuals at the $k$th step $\widehat{\be}^{(k)}$.
+
+For a given step, let $\widehat{e}_{(1)}$ and $\widehat{e}_{(N)}$ denote the minimum and maximum of residuals, respectively.
+Partition the data into $B$ subintervals (or bins) based on the range of all $N$ residuals.
+Let $d_0 < d_1 < \cdots < d_B$ denote the  points defining the subintervals.
+% (i.e. the bin boundaries).
+Denote the subintervals {\bf bins}; by $B_j$,  defined by
+\begin{equation}
+\label{bucketj}
+B_j = (d_{j-1},d_j], \;\;\; j=1, \ldots, B.
+\end{equation}
+In practice the $d$'s are the approximate quantiles so that there will be approximately an equal number of residuals in each of the bins.
+
+For a given bin, say, $j$ ($j =1, \ldots, B$),
+the lowest rank is $R_j^{L} =  \sum_{k < j} (n_k + 1)$ and 
+the highest rank is $R_j^{H} = \sum_{k \le j} n_k$.
+The {\bf step scores}\index{Scores!Step scores} are given by
+\begin{equation}
+\label{E:stepscores}
+s_j = \left[a \left( R_j^H \right) + a \left( R_j^L \right)\right]/2
+    = \left[a \left(\sum_{l=1}^{j-1} (n_{l} + 1) \right) + a \left(\sum_{l=1}^j n_{l}\right)\right]/2.
+\end{equation}
+Computation of step scores is illustrated using \verb|data.table| \citep{data.table} in Section~\ref{SS:data.table}.
+
+Another option is to use a linear approximation to the score function.
+The line segment joining the points 
+$\left(d_{j-1},a \left(\sum_{l=1}^{j-1} n_{\cdot l} + 1\right)\right)$ 
+and 
+$\left(d_{j},a\left(\sum_{l=1}^{j} n_{\cdot l}\right)\right)$ is given by
+\begin{equation}
+\label{funcgj}
+g_j(x) = \frac{a\left(\sum_{l=1}^{j} n_{\cdot l}\right) - a\left(\sum_{l=1}^{j-1} n_{\cdot l} + 1\right)}{d_j - d_{j-1}}
+(x - d_{j-1}) + a\left(\sum_{l=1}^{j-1} n_{\cdot l} + 1\right).
+\end{equation}
+On the $kth$ step of the algorithm,
+the score for a residual $\widehat{e}_l^{(k)} \in \bB_{j}$ is $g_j(\widehat{e}_l^{(k)})$.
+
+Note that
+there are different ways of choosing the bins;
+however, we recommend bins based on percentiles.
+For example, if $B=100$ then the percentiles $0.00, 0.01, \ldots, 0.99,1.00$
+are used.
+Thus the bins are preset and, in particular, the score function is  not data driven.
+
+When using either class of approximating score function denote the minimizor of the objective function
+(\ref{eq:bd_jaeckel})
+as $\widehat{\bbeta}_{\varphi_B}$ where $B$ is the number of bins used.
+
+\subsection{Asymptotic Distribution}
+
+The estimator $\widehat{\bbeta}_{\varphi_B}$ has the
+same asymptotic properties as discussed in Chapter~\ref{C:regress}, which we summarize here for convenience.
+Note, we use the median to estimate the intercept.
+Let $\bX_c$ denote the center design matrix.  Under regularity conditions (see \citet{bigRfitpaper}), the asymptotic distribution of the estimators is given by
+\begin{equation}
+\label{ch3jtdist}
+\left[ \begin{array}{c} \widehat{\alpha}_S^* \\
+                                    \widehat{\bbeta}_{\varphi_B} \end{array}\right]
+\sim N_{p+1}\left( \left(\begin{array}{c} \alpha_0
+\\ \bbeta_0 \end{array} \right),
+ \left[ \begin{array}{cc} \kappa_n & -\tau^2_\varphi\overline{\bf x}^T ({\bf X}_c^T{\bf X}_c)^{-1} \\
+-\tau^2_\varphi({\bf X}_c^T{\bf X}_c)^{-1}\overline{\bf x} & \tau_\varphi^2({\bf X}_c^T{\bf X}_c)^{-1} \end{array} \right]\right)  \;,
+\end{equation}
+where $\kappa_n = n^{-1}\tau^2_S + \tau^2_\varphi\overline{\bf x}^T ({\bf X}_c^T{\bf X_c})^{-1}\overline{\bf x}$
+and the scale parameters $\tau_\varphi$ and $\tau_S$ are defined by
+\begin{equation}
+\label{taus}
+\mbox{$\tau_\varphi  =    \left[\int\varphi(u)\varphi_f(u)\,du\right]^{-1}$ and $\tau_S  =  [2f(0)]^{-1}$},
+\end{equation}
+where
+\begin{equation}
+\label{optscore}
+\varphi_f(u) = -\frac{f'[F^{-1}(u)]}{f[F^{-1}(u)]}.
+\end{equation}
+Estimators of the scale parameters $\tau_\varphi$ for big data are discussed in Section \ref{sect:bd_tauhat}.
+%Estimators of he scale parameters $\tau_\varphi$ and $\tau_S$ for big data are discussed in Section \ref{sect:estscale}.
+
+
+%as given in
+%expression (\ref{ch3jtdist}) with scale parameters $\tau_S$ and $\tau_{\varphi_B}$ as
+%defined in expression (\ref{taus}) using the score function $\varphi_B(u)$.
+%This theory serves as guidelines to statistical inference.
+From here statistical inference ensues.
+For example, a $(1-\alpha)*100\%$ confidence interval for $\beta_j$ is
+\begin{equation}
+        \label{cibetaj}
+        \widehat{\beta}_{\varphi_B,j} \pm t_{\alpha/2,N-p-1} \widehat{\tau}_{\varphi_B} \sqrt{(\bX^T\bX)^{-1}_{jj}},
+\end{equation}
+where $(\bX^T\bX)^{-1}_{jj}$ is the $jth$ diagonal entry of the matrix $(\bX^T\bX)^{-1}$ and the estimator
+$\widehat{\tau}_{\varphi_B}$ is discussed below (see expression~(\ref{esteff2})).
+%Confidence intervals and tests involving the intercept parameter requires estimation of $\tau_S$ which is also discussed below (see expression~(\ref{tauS})).
+

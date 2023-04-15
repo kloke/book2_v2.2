@@ -1,0 +1,402 @@
+\documentclass[krantz1]{krantz}
+%\documentclass[11pt]{book}
+
+\usepackage{epigraph}
+\renewcommand{\epigraphsize}{\small}
+\renewcommand{\textflush}{flushright} \renewcommand{\sourceflush}{flushright}
+\let\originalepigraph\epigraph
+\renewcommand\epigraph[2]{\originalepigraph{\textit{#1}}{\textsc{#2}}}
+
+\setlength{\epigraphwidth}{0.47\textwidth}
+
+
+\usepackage{pagenote}
+\makepagenote
+
+\renewcommand*{\notedivision}{\section*{\notesname\ to Chapter~\thechapter}}
+\renewcommand*{\pagenotesubhead}[2]{}
+
+\renewcommand*{\thepagenote}{\textbf{Note}~\thesection.\arabic{pagenote}}
+\renewcommand{\notenumintext}[1]{\normalsize#1}
+
+
+\SweaveOpts{prefix.string=graphics2/q}
+\SweaveOpts{eps=TRUE,pdf=TRUE}
+
+\usepackage{natbib}
+%\usepackage{verbatim}
+
+\bibliographystyle{asa}
+\bibpunct[: ]{(}{)}{;}{a}{}{,} %citation style for ASA style guide
+
+
+\usepackage{cite}
+\usepackage[utf8]{inputenc}
+\usepackage{defs}
+
+\usepackage{color}
+\newcommand{\purple}[1]{\textcolor[rgb]{0.50,0.00,0.50}{#1}}
+
+
+\usepackage{amssymb,latexsym,amsmath,amsthm}
+\usepackage{makeidx}
+\usepackage{index}
+\makeindex
+\newindex{aut}{adx}{and}{Author Index}
+
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+
+\newcommand{\thetheorem}{\thesection.\arabic{theorem}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{example}{Example}[section]
+\renewcommand{\thetheorem}{\thesection.\arabic{theorem}}
+\newtheorem{remark}{Remark}[section]
+\renewcommand{\thetheorem}{\thesection.\arabic{theorem}}
+
+\newtheorem{definition}{Definition}[section]
+\theoremstyle{definition}
+\newtheorem{exercise}{}[section]
+
+\title{DRAFT \\ Nonparametric Statistical Methods Using R \\ 2nd Edition\\ DRAFT }
+
+\author{John D.~Kloke \& Joseph W.~McKean}
+
+
+\begin{document}
+
+
+\frontmatter
+
+\maketitle
+
+\vspace{4.5in}
+Copyright \copyright 2023 by John D. Kloke and
+%Copyright \copyright the year Twenty Twenty Two by John D. Kloke and
+Joseph W. McKean \\
+All rights reserved.
+
+%%NJ
+%\newpage
+%\vspace*{2.0in}
+%\begin{center}
+%{\em Dedication: To Erica and Marge}
+%\end{center}
+%\newpage
+%\thispagestyle{empty}
+%$\;\;\;$
+%%NJ
+
+\newpage
+
+\tableofcontents
+%%NJ
+%\chapter{Preface}[]
+%\input{pref}
+\mainmatter
+%%NJ
+
+\SweaveOpts{echo=true}
+
+<<echo=FALSE>>=
+library(Rfit)
+library(npsm)
+library(xtable)
+library(plyr)
+library(profileR)
+library(ellipse)
+library(car)
+library(dplyr)
+library(class)
+@
+
+% future npsm R package functions
+<<echo=false>>=
+source('R/rcn.r')
+source('R/rcnx100.r')
+source('R/sign.test_p.value.R')
+source('Rfit/drop.test.R')
+source('R/wilson.ci.R')
+source('R/knn_cv.r')
+@
+
+
+% future npsm R package datasets
+<<echo=FALSE>>=
+load('./data/seinfeld.rda')
+load('./data/brewers1982.rda')
+load('./data/skewns.rda')
+load('./data/baseball_players1000.rda')
+load('./data/sim_class2.rda')
+@
+
+<<echo=false>>=
+options(width=60)
+@
+
+%\epigraph{Do you copy? Shut down all the garbage mashers on the Detention Level! Shut down all the garbage mashers on the Detention Level!}{Luke Skywalker, Star Wars}
+
+\epigraph{\textit{If you will it, Dude, it is no dream.}}{Walter Sobchak\\ quoting\\ Theodor Herzl,\\ The Big Lewbowski}
+
+
+%\chapter{Getting Started with R}[]
+%\SweaveInput{primer/vig}
+%\input{primer/primer0}
+
+
+<<echo=FALSE>>=
+ls0 <- ls()
+ls0 <- c(ls0,'ls0')
+@
+
+%\chapter{Introduction}[]
+%\input{intro/intro}
+%\SweaveInput{intro/data}
+%\SweaveInput{intro/graphics}
+%\SweaveInput{intro/mc1}
+%\SweaveInput{intro/simulation}
+%\SweaveInput{intro/functions}
+%\SweaveInput{intro/permuted_block_eg}
+%\SweaveInput{intro/introden1}
+%\SweaveInput{intro/secdensity}
+%\SweaveInput{intro/secdensity2}
+%\SweaveInput{intro/introden2}
+%\SweaveInput{intro/denexer}
+%
+%\input{intro/Rpkgs}
+%\SweaveInput{intro/opening.Snw}
+%\input{intro/exercises1}
+%\SweaveInput{intro/exercises}
+%% \printnotes*
+%
+%\newpage
+%
+%<<>>=
+%ls()
+%rm(list = setdiff(ls(), c(ls0,lsf.str())))
+%ls()
+%@
+%
+%
+%%\chapter{First Concepts in Nonparametrics}[]
+%%\setcounter{chapter}{1}
+%\chapter{One-Sample Problems}[]
+%%\SweaveInput{basics/readme}
+%\input{basics/intro}
+%\input{basics/p1}
+%\SweaveInput{basics/one_sample_p}
+%% \SweaveInput{basics/power}
+%\SweaveInput{basics/sign_test}
+%\input{basics/wilcoxon}
+%\SweaveInput{basics/introden1}
+%\SweaveInput{basics/tiesos}
+%\SweaveInput{basics/se}
+%\SweaveInput{basics/asytst}
+%\input{basics/bootstrap}
+%\input{basics/robust}
+%\SweaveInput{basics/powerone}
+%%\SweaveInput{basics/knn}
+%\input{basics/exercises1}
+%%\printnotes*
+%
+%<<>>=
+%ls()
+%rm(list = setdiff(ls(), c(ls0,lsf.str())))
+%ls()
+%@
+%
+%\chapter{Two-Sample Problems}
+%\label{C:twos}
+%\input{twosample/intro}
+%\input{twosample/rankbased}
+%\input{twosample/scaleproblem}
+%\input{twosample/placementtest}
+%\SweaveInput{twosample/efficiency}
+%\SweaveInput{twosample/adaptive}
+%\input{twosample/km2}
+%\SweaveInput{survival/stratifiedsim}
+%\input{twosample/exercises}
+%
+%<<>>=
+%ls()
+%rm(list = setdiff(ls(), c(ls0,lsf.str())))
+%ls()
+%@
+
+
+%\setcounter{chapter}{3}
+%\chapter{Regression}
+%\label{C:regress}
+%\input{regression/intro}
+%\input{regression/cor}
+%\input{regression/slr}
+%\input{regression/mlr}
+%%\input{regression/lm}
+%%\input{regression/aligned}
+%\input{regression/bootstrap}
+%\input{regression/npreg}
+%%\section{Splines}
+%\input{regression/exercises}
+%% \SweaveInput{regression/modelselection}
+
+%<<>>=
+%ls()
+%rm(list = setdiff(ls(), c(ls0,lsf.str())))
+%ls()
+%@
+
+
+%\chapter{ANOVA-Type Rank-Based Procedures}
+%\label{C:anova}
+%\input{anova/intro}
+%\input{anova/oneway}
+%\input{anova/multiway}
+%\SweaveInput{anova/ancova}
+%%\input{anova/typeIII}
+%\input{anova/orderedHAs}
+%\input{anova/scale}
+%\input{anova/exercises}
+%\SweaveInput{anova/newexercises}
+%
+%<<>>=
+%ls()
+%rm(list = setdiff(ls(), c(ls0,lsf.str())))
+%ls()
+%@
+%
+
+%\chapter{Categorical}
+%\SweaveInput{categorical/two_sample_intro}
+%\SweaveInput{categorical/two_sample_risk_diff}
+%%\input{categorical/2p1}
+%\SweaveInput{categorical/two_sample_p}
+%\SweaveInput{categorical/covid_tofa}
+%\input{categorical/from1st.tex}
+%\SweaveInput{categorical/stratified}
+%\SweaveInput{categorical/logistic_reg}
+%\SweaveInput{categorical/knn}
+%\SweaveInput{categorical/trees4class}
+%\section*{Exercises}
+%\input{categorical/exercises1st.tex}
+
+%<<>>=
+%ls()
+%rm(list = setdiff(ls(), c(ls0,lsf.str())))
+%ls()
+%@
+
+
+%\chapter{Linear Models}
+%\input{regression/lm}
+%\input{regression2/weighted}
+%\SweaveInput{anova/ancova}
+%\input{anova/typeIII}
+%\input{regression/aligned}
+%\subsection{Splines}
+
+%\setcounter{chapter}{6}
+%\chapter{Topics in Regression}
+%<<>>=
+%library(ISLR)
+%@
+%\label{C:regress2}
+%\input{regression2/intro}
+%\input{regression2/hbr}
+%\input{regression2/diagnostics}
+%%\input{regression2/weighted}
+%\input{regression2/sn}
+%\input{regression2/adaptive}
+%\SweaveInput{regression2/trees4regress}
+%\input{regression2/nonlinear}
+%\input{regression2/timeseries}
+%\input{regression2/exercises}
+%%\SweaveInput{trees4class}
+%%\SweaveInput{trees4regress}
+%\SweaveInput{survival/aft}
+%\input{survival/exercises}
+%
+%\chapter{Cluster Correlated Data}
+%\input{cluster/cluster2.tex}
+
+%\chapter{Multivariate Analysis}
+%\SweaveInput{multivariate/mv-intro}
+%\SweaveInput{multivariate/mv-mathstat}
+%\SweaveInput{multivariate/locationEst}
+%\SweaveInput{multivariate/locationTest}
+%\SweaveInput{multivariate/newaffine}
+%\SweaveInput{multivariate/discriminant}
+
+
+\newpage
+
+%<<>>=
+%ls()
+%rm(list = setdiff(ls(), c(ls0,lsf.str())))
+%ls()
+%@
+
+
+\chapter{Big Data}
+<<echo=FALSE>>=
+library(bigRfit)
+@
+
+\SweaveInput{bigData/intro}
+\SweaveInput{bigData/bigRfit0}
+\input{bigData/tauhat}
+\input{bigData/efficiency}
+\input{bigData/algorithm}
+\input{bigData/examples}
+\SweaveInput{bigData/packages}
+\SweaveInput{bigData/bigRfit_biglm}
+\SweaveInput{bigData/sum_sim_eff}
+\SweaveInput{bigData/sum_sim_time}
+\SweaveInput{bigData/bigRreg_eg}
+\SweaveInput{bigData/approxtauAH}
+\SweaveInput{bigData/spark0}
+\SweaveInput{bigData/bigRfit_sparklyr0}
+%\input{bigData/outro}
+\SweaveInput{bigData/exercises}
+
+
+\chapter*{Appendix - R Version Information}
+The majority of the material in this book was developed using Sweave.
+We did not rerun all of the R code chunks from the first edtion for the second edition.
+
+
+
+
+The following code chuck lists, in alphabetical order, all packages loaded at the end of running the current edition.
+<<echo=TRUE>>=
+sort(.packages())  
+@
+\newpage
+Most of the new material for the second edition of this book was developed using the following version of R.
+<<echo=TRUE>>=
+version
+@
+
+\cleardoublepage
+
+\bibliography{refs}{}
+%\bibliography{refs,new_refs}{}
+
+%\printindex[aut]
+
+$\;\;\;$
+\newpage
+
+\thispagestyle{empty}
+$\;\;\;$
+\newpage
+
+\printindex
+
+
+\end{document}

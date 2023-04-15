@@ -1,0 +1,54 @@
+<<echo=FALSE>>=
+#nvec <- c('5000',  '25000', '100000', '250000', '1000000' )
+nvec <- c('5000',  '25000', '100000')
+
+time0Mat <- time1Mat <- matrix(NA, nrow=length(nvec), ncol=20)
+rownames(time0Mat) <- rownames(time1Mat) <- format(nvec)
+
+for(i in seq_along(nvec)) {
+
+  ls0 <- ls()
+  load(paste0('bigData/sim/',nvec[i],'/results.rda'))
+  time0Mat[i,] <- time0
+  time1Mat[i,] <- time1
+
+  rm(list=setdiff(ls(),ls0))
+
+}
+@
+
+Both \verb|Rfit| and \verb|bigRreg| were run with the option \verb|TAU='N'| specifying that $\tau$ was not to be estimated in the case of \verb|Rfit| and a final estimate of tau not be estimated in the case of \verb|bigRreg| (an inital estimate is required for the Newton algorithm, however, a final estimate based on the final residuals is not estimated).  
+In Figure~\ref{F:bd_timesim_boxplot} times for the each of the runs are plotted for two of the selected sample sizes.
+
+
+<<label=bd_timesim_boxplots_c,fig=TRUE,echo=FALSE,include=FALSE>>=
+par(mfrow=c(1,2))
+boxplot(time0Mat[1,], time1Mat[1,],ylab='time (sec)',names=c('Rfit','bigRreg'),ylim=c(0,7),main='N=5000')
+boxplot(time0Mat[2,], time1Mat[2,],ylab='time (sec)',names=c('Rfit','bigRreg'),ylim=c(0,7),main='N=25000')
+@
+
+\begin{figure}[ht!]
+\centering
+<<label=bd_timesim_boxplots_d,fig=TRUE,echo=FALSE>>=
+<<bd_timesim_boxplots_c>>
+@
+\caption{Comparison boxplots for timing simulation for selected sample sizes.  Sample sizes given in the titles.}
+\label{F:bd_timesim_boxplot}
+\end{figure}
+
+The average time for the 20 runs for \verb|Rfit| is given in the following code chunk.
+<<echo=FALSE>>=
+apply(time0Mat,1,mean)
+@
+
+The average time for the 20 runs for \verb|bigRreg| is given in the following code chunk.
+<<echo=FALSE>>=
+apply(time1Mat,1,mean)
+@
+
+As one would expect, the computation time for each method increases with sample size.
+The increase for \verb|Rfit| is much larger than for \verb|bigRreg|.
+In the case of \verb|bigRreg|,
+for this range of sample sizes, the difference is quite small (and perhaps would be diffcult to observe without using a {\em stopwatch}; a.k.a. \verb|system.time|).
+
+

@@ -1,0 +1,15 @@
+\subsection{Approximation of $\tau$}
+
+As mentioned in subsection~\ref{sect:bd_tauhat} an approximation of the scale parameter $\tau$ may be based on Equation~\label{E:bingamma} provided $N$ is sufficiently large.
+In \verb|bigRfit| an implementation of this approximation is provided.
+At the time of writing, the function is defined as given in the following code chunk.
+<<>>=
+approxtauAH
+@
+Required arguments are a \verb|data.table| of the score matrix (\verb|scoreMat|) --- calculation of which is illustrated in subsection~\ref{SS:data.table} --- a vector of the bin mid points (\verb|mids|) and the total sample size (\verb|n|).
+See Exercise~\ref{BD:ex:approxtau}.
+Optionally the bandwidth may be provided; \verb|bw_bigRfit| provide is based on \verb|bw.nrd| in core R.
+Another option available is \verb|gettauSSF0| which uses the KSM \citep{koul87} estimate in \verb|Rfit| based on the step scores.  
+In most big data settings, \verb|approxtauAH| should be faster and is the default in \verb|bigRreg|.
+
+Note: it is not recommended to use normal scores (i.e., \verb|nscores|) at this time as an adjustment may be needed (under investigation; see \citet{bigRfitpaper}).

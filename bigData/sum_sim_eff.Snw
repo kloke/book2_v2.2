@@ -1,0 +1,46 @@
+<<echo=FALSE>>=
+nvec <- c('5000',  '25000', '100000')
+
+beta <- c(3,1.5,0,0,2,0,0,0)
+p <- length(beta)
+Sigma_x <- 0.5^abs(outer(1:p,1:p,'-'))
+
+
+effMat <- matrix(NA,nrow=length(nvec),ncol=length(beta))
+rownames(effMat) <- format(nvec)
+colnames(effMat) <- paste0('beta',seq_along(beta))
+
+mseVec <- function(betahat,betatrue) {
+  apply(
+   (betahat - matrix(rep(beta,each=nrow(betahat)),nrow=nrow(betahat)))^2, 2, mean
+  )
+
+}
+
+
+for(i in seq_along(nvec)) {
+
+  ls0 <- ls()
+  load(paste0('bigData/sim/',nvec[i],'/results.rda'))
+  effMat[i,] <- mseVec(beta1)/mseVec(beta0)
+  rm(list=setdiff(ls(),ls0))
+
+}
+@
+
+As a empirical illustration we preformed a small simulation to compare two implementations: \verb|rfit| and \verb|bigRreg|.
+While \verb|rfit| will fit a general linear model, \verb|bigRreg| requires an intercept (column of ones) be in the model (design).
+Our goal is primarily to compare the time to run each of the implementations.  But first we do a quick comparison on the relative efficiencies.
+The model is our usual linear model with parameters as in \ref{eq:bd_lm}.
+The simulation size was 20 runs.
+The selected sample sizes used are:
+<<echo=FALSE>>=
+cat(nvec)
+@
+
+The results for empirical relative efficiency of the full ranking method (via \verb|rfit|) and the step-scores using a partial ranking (via \verb|bigRreg|) are provided in Table~\ref{TABeffsstor}.
+
+<<results=tex,echo=FALSE>>=
+print(xtable(effMat,caption='Table of relative efficiencies for selected sample sizes.', label='TABeffsstor',digit=4))
+@
+

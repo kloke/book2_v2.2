@@ -1,0 +1,229 @@
+\subsection{Efficiency based on the Number of Bins}
+\label{sect:effstudy}
+In this section, we address the number of bins in terms of asymptotic efficiency.
+This study indicates that 100 bins seem to suffice for moderate sample sizes to millions of observations.
+We set the default to \verb|B=1000| in \verb|bigRfit| based on empirical evaluation of simulated datasets using ranges of values of $B$ considering computational time and relative efficiency.\footnote{Computational time was similar when using 100 and 1000 bins, for example, on a mid-range laptop.}
+
+Let $\varphi(u)$ be the selected score function for estimation and associated inference.
+Intuitively, the step and linear score functions which approximate $\varphi(u)$
+converge to $\varphi(u)$ as the number of bins goes to $\infty$
+(see \citet{bigRfitpaper} for more information).
+%We briefly sketch a formal argument of this fact
+%for the step scores.
+%A similar argument holds for the piecewise linear scores.
+
+%Because $\varphi(u)$ is bounded and continuous on $[0,1]$, it is uniformly continuous on $[0,1]$.
+%Write the step score approximation function as $\varphi_B(u)$ where $B$ is the number of bins.
+%Let $\epsilon >0$ be given and choose $\delta >0$ such that
+%$|\varphi(u_1)-\varphi(u_2)|< \epsilon$, if $|u_1-u_2|<\delta$.
+%Choose $B_0 > 1/\delta$.
+%Let  $B>B_0$.
+%Let $u \in [0,1]$.
+%Then $u$ is in some subinterval of the partition using $B$; i.e., for some $i$, $(i-1)/B \leq u < i/B$.
+%Hence $\varphi[(i-1)/B] \leq \varphi_B[u] \leq \varphi[i/B]$.
+%Then, since $\varphi(u)$ is nondecreasing and $1/B < \delta$, we have
+%\begin{equation}
+%\label{cal1}
+%|\varphi_B(u) - \varphi(u)| \leq \left|\varphi\left(\frac{i}{B}\right) - \varphi\left(\frac{i-1}{B}\right) \right| < \epsilon.
+%\end{equation}
+%Hence, we have the theorem:
+
+%\begin{theorem}
+	%Let $\varphi_B(u)$ be the approximating step (linear) score for $\varphi(u)$.
+	%Then $\varphi_B(u)$ converges uniformly to $\varphi(u)$ on $[0,1]$.
+%\end{theorem}
+%
+%Using the inequality $|a| - |b| \leq |a-b|$ and letting $\epsilon =1$, we have for $b$ sufficiently large
+%\begin{equation}
+%\label{cal2}
+	%|\varphi_B(u)| \leq |\varphi(u)| + 1.
+%\end{equation}
+%
+%\begin{theorem}
+%The efficacy of the piecewise linear and the step scores converge to the efficacy of approximated score
+%as the number of bins converges to $\infty$.
+%\end{theorem}
+
+%\noindent
+%\emph{Proof:} 
+%First note that because $\varphi(u)$ and $\varphi_f(u)$ are both square integrable on $(0,1)$ both functions are 
+%integrable
+%and, further, by the Cauchy-Schwarz inequality, their product is integrable.
+%By (\ref{cal2}), we have
+%\begin{equation}
+	%\label{cal3}
+	%|\varphi_B(u)\varphi_f(u) | \leq (|\varphi(u)|+1)|\varphi_f(u)|,
+%\end{equation}
+%for $B$ sufficiently large.
+%The product of functions on the right side of the inequality (\ref{cal3}) is integrable.
+%Hence, since $\varphi_B(u) \rightarrow \varphi(u)$, as $B \rightarrow \infty$, we have
+%by the Lebesgue Dominated Convergence Theorem
+%\begin{equation}
+        %\label{ssefficacy}
+%\lim_{B\rightarrow \infty} \int_0^1 \varphi_B(u) \varphi_f(u) \, du =
+ %\int_0^1 \lim_{B\rightarrow \infty} \varphi_B(u) \varphi_f(u) \, du =
+ %\int_0^1 \varphi(u) \varphi_f(u) \, du;.
+%\end{equation}
+%that is,  $\gamma_{B} \rightarrow \gamma_{\varphi}$ as the number of bins goes to $\infty$.
+%\rule{1.8mm}{1.8mm}
+%
+%This result is general.
+In the next two subsections, we obtain the efficacy of the step scores which approximate
+the Wilcoxon scores for normal and logistic distributed errors, respectively.
+%For these two situations, $B=100$ seems to be a sufficient number of bins.
+
+\subsubsection{Efficiencies of the Step Scores at the Normal Distribution}
+\label{asyeffnorm}
+We determine the efficiencies of the step scores approximating the
+the Wilcoxon score function ($\varphi(u) = \sqrt{12}[u-(1/2)]$) at the normal distribution.
+As discussed previously in the text, the ARE of the Wilcoxon
+estimator relative to the LS estimator is 0.9549297.
+%When fitting a dataset using the big data algorithm,
+%the bin lengths differ.
+%For this investigation, though, we consider the ideal condition where the bin lengths are the same.
+%From expression  (\ref{efficacy}), the efficacy depends on the distribution of the random errors but, since it is the reciprocal of a scale
+%parameter it is invariant to location and varies inversely with respect to scale.
+%Thus, we need only consider the form of the pdf.
+%So for the normal case we select the standard normal pdf.
+
+%For this case the function $\varphi_f(u)$ in expression (\ref{optscore}) simplifies to
+%\begin{equation}
+%\label{phi_f}
+%\varphi_f(u) = \Phi^{-1}(u),
+%\end{equation}
+%where $\Phi(x)$ is the standard normal cdf; i.e., the optimal scores at the normal distribution are these scores,
+%which are called the {normal scores}.
+%
+%The efficacy for the Wilcoxon case is the well known result:
+%\begin{equation}
+%\label{effwil}
+%\gamma_W =  \int_0^1 \sqrt{12}[u-(1/2)]\Phi^{-1}(u) \, du = \sqrt{\frac{\pi}{3}} = 1.023327.
+%\end{equation}
+%Note that square of the reciprocal of $\sqrt{\frac{\pi}{3}}$ is the ARE of the Wilcoxon
+%estimator relative to the LS estimator, 0.9549297.
+
+%Consider a step score function, $\varphi_S$, as discussed in Section \ref{stpalg},  over $B$ bins; i.e., over the intervals
+%\begin{equation}
+%\label{stepints}
+%\left[\frac{i-1}{B}, \frac{i}{B}\right), \;\;\; i=1, 2, \ldots, B.
+%\end{equation}
+%The function $\varphi_S(u)$ is constant on each of these intervals and the size of the step is the same.
+%Let $s_1<s_2 < \cdots <s_B$ be the respective values of $\varphi_S(u)$ on the $B$ subintervals.
+%Assume that it is standardized, i.e., expression (\ref{eq:score1}) holds.
+%Then the efficacy of $\varphi_B(u)$ is
+%\begin{eqnarray}
+%	\gamma_{\varphi_B} &=& \int_0^1 \varphi_{\varphi_B}(u) \Phi^{-1}(u) \, du  \nonumber \\
+% &=& \sum_{i=1}^B \int_{(i-1)/B}^{i/B}  s_i \Phi^{-1}(u) \, du  \nonumber \\
+% &=& \sum_{i=1}^B s_i \int_{\Phi^{-1}[(i-1)/B]}^{\Phi^{-1}[i/B]}  x \frac{1}{\sqrt{2\pi}} e^{-x^2/2} \, dx  \nonumber \\
+% &=& \sum_{i=1}^B \frac{s_i}{\sqrt{2\pi}}  \int_{(1/2)\Phi^{-1}[(i-1)/B]^2}^{(1/2)\Phi^{-1}[i/B]^2} e^{-z} \, dz  \nonumber \\
+%\label{effvarS}
+% &=& \sum_{i=1}^B \frac{s_i}{\sqrt{2\pi}} \left[\exp\left\{-(1/2)\Phi^{-1}[(i-1)/B]^2\right\}
+%            - \exp\left\{-(1/2)\Phi^{-1}[i/B]^2\right\} \right],
+%\end{eqnarray}
+%where the derivation included two changes-of-variables.
+
+%The scores are computed as in Section \ref{}.
+%Expression (\ref{effvarS}), though,  is asymptotic.
+For illustration, we use a sample size of $N=10000$. 
+Table \ref{tabeff} displays the calculated efficiencies of the step scores for various values of $B$.
+It also tables their ARE's relative to the Wilcoxon and to LS.
+Of course, LS dominates since the error distribution is normal.
+Note that the step scores for $B=2$ are the sign scores; with ARE relative to LS of 
+0.637.
+At $B=100$ there is little difference between the step scores and the Wilcoxon scores in terms
+of efficiency. 
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{r|rr|rr}
+  \hline
+ & \multicolumn{2}{c|}{Efficiency} & \multicolumn{2}{|c}{ARE} \\
+ B & SS & W & SS to W & SS to LS \\ 
+  \hline
+ 2 & 0.797885 & 0.977205 & 0.666667 & 0.636620 \\ 
+ 4 & 0.925281 & 0.977205 & 0.896553 & 0.856145 \\ 
+ 5 & 0.942297 & 0.977205 & 0.929831 & 0.887923 \\ 
+ 10 & 0.967152 & 0.977205 & 0.979531 & 0.935383 \\ 
+ 15 & 0.972493 & 0.977205 & 0.990380 & 0.945743 \\ 
+ 20 & 0.974368 & 0.977205 & 0.994203 & 0.949394 \\ 
+ 50 & 0.976687 & 0.977205 & 0.998939 & 0.953917 \\ 
+ 100 & 0.977064 & 0.977205 & 0.999711 & 0.954654 \\ 
+ 200 & 0.977167 & 0.977205 & 0.999922 & 0.954855 \\ 
+ 400 & 0.977195 & 0.977205 & 0.999979 & 0.954910 \\ 
+   \hline
+\end{tabular}
+\caption{
+Table of efficiencies of step scores for normal errors.
+Abbreviations: ARE=asymptotic relative efficiency; B is number of bins; SS=step scores; W=Wilcoxon scores (based on a full ranking); LS=least squares.
+}
+\label{tabeff}
+\end{table}
+\subsubsection{Wilcoxon Scores at the Logistic Distribution}
+In the last subsection, we assumed a normal population while in this section we consider a logistic
+population.
+Recall that the Wilcoxon scores are optimal in this case.
+The efficacy for the Wilcoxon score function $\varphi_W(u) = \sqrt{12}[u-(1/2)]$ at the logistic
+probability model is 0.5773503
+%\begin{equation}
+%\label{wilefflog}
+%\gamma_W = \int_0^1  \sqrt{12}\left(u - \frac{1}{2}\right)(2u-1)\, du  = \frac{2}{\sqrt{12}} \dot= 0.5773503.
+%\end{equation}
+
+%The pdf and cdf of the logistic distribution are given by
+%\begin{equation}
+%\label{logisticpc}
+%\mbox{$f(x) = \frac{e^{-x}}{(1+e^{-x})^2}\;\;$ and $\;\;F(x) = \frac{1}{1+e^{-x}}$, $\; -\infty < x < \infty$},
+%\end{equation}
+%respectively.
+%It follows that $F^{-1}(u) = \log[u/(1-u)]$.
+%By a simple derivation, the optimal scores are given by
+%\begin{equation}
+%\label{optlogistic}
+%\varphi_f(u) = 2u -1;
+%\end{equation}
+%i.e., Wilcoxon scores.
+%Hence, the efficacy for the Wilcoxon score function $\varphi_W(u) = \sqrt{12}[u-(1/2)]$ at the logistic
+%probability model (\ref{logisticpc}) is:
+%\begin{equation}
+%\label{wilefflog}
+%\gamma_W = \int_0^1  \sqrt{12}\left(u - \frac{1}{2}\right)(2u-1)\, du  = \frac{2}{\sqrt{12}} \dot= 0.5773503.
+%\end{equation}
+%As the following derivation shows, we also obtain the efficacy of the approximating step scores in a simplified form:
+%\begin{equation}
+%\label{effsteplogistic}
+%\gamma_s = \sum_{i=1}^B \int_{(i-1)/B}^{i/B} s_i (2u-1)\, du
+% = \sum_{i=1}^B s_i \frac{2i-(B+1)}{B^2}.
+%\end{equation}
+
+Table~\ref{tabefflog} displays the  efficiencies of step scores for various values of B relative to the efficacy of the Wilcoxon at the logistic distribution. 
+At $B=2$ the step scores are the sign scores and, of course, they are inefficient relative to the Wilcoxon scores in the case of logistic errors.
+Note, though, at $B=5$ this ARE has climbed to 0.96.
+At $B=100$ the efficiency of step score analyses is essentially the same as the Wilcoxon analyses.
+Also at $B=4$, the step scores analyses are more efficient than LS analyses.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{r|rr|rr}
+  \hline
+ & \multicolumn{2}{c|}{Efficiency} & \multicolumn{2}{|c}{ARE} \\
+B & SS & W & SS to W & SS to LS \\ 
+  \hline
+ 2 & 0.500000 & 0.577350 & 0.750000 & 0.822467 \\ 
+ 4 & 0.559017 & 0.577350 & 0.937500 & 1.028084 \\ 
+ 5 & 0.565685 & 0.577350 & 0.960000 & 1.052758 \\ 
+ 10 & 0.574456 & 0.577350 & 0.990000 & 1.085656 \\ 
+ 15 & 0.576122 & 0.577350 & 0.995751 & 1.091963 \\ 
+ 20 & 0.576628 & 0.577350 & 0.997500 & 1.093881 \\ 
+ 50 & 0.577235 & 0.577350 & 0.999600 & 1.096184 \\ 
+ 100 & 0.577321 & 0.577350 & 0.999900 & 1.096513 \\ 
+ 200 & 0.577343 & 0.577350 & 0.999975 & 1.096595 \\ 
+ 400 & 0.577348 & 0.577350 & 0.999994 & 1.096616 \\ 
+   \hline
+\end{tabular}
+\caption{
+Table of efficiencies of step scores for logistic errors.
+Abbreviations: ARE=asymptotic relative efficiency; B is number of bins; SS=step scores; W=Wilcoxon scores (based on a full ranking); LS=least squares.
+}
+\label{tabefflog}
+\end{table}
+

@@ -1,0 +1,37 @@
+\section{Exercises}
+
+\begin{exercise}
+Argue, for Wilcoxon (linear) scores, the step scores defined in \ref{E:stepscores} may be computed as
+\begin{equation*}
+s_j = a \left[\left( \sum_{l=1}^{j-1} (n_{l} + 1) + \sum_{l=1}^j n_{l}\right)/2 \right].
+\end{equation*}
+\end{exercise}
+
+\begin{exercise}
+Formulate, using concise notation, the linear model from which the sample in Example~\ref{eg:xy7} was drawn.
+\end{exercise}
+
+\begin{exercise}
+Redo Example~\ref{eg:xy7} in with a sample size of n=10333333, if possible.
+\end{exercise}
+
+\begin{exercise}
+Using the data from the last exercise, calculate the \verb|scoreMat| using \verb|data.table| as illustrated in \ref{SS:data.table}.
+Calculate a frequency distribution of bin counts.
+\end{exercise}
+
+\begin{exercise}
+Redo Example~\ref{eg:xy7} with \verb|n <- 10^8|, if possible.
+{\em Hint:} Use a loop and write to disk in chunks.
+\end{exercise}
+
+\begin{exercise}
+Using the data from the last exercise, and \verb|sparklyr| if available, calculate the least squares regression coefficients and associated standard errors along with the Wilcoxon one-step counter parts as illustrated in Section~\ref{S:1stepWsparklyr}.
+\end{exercise}
+
+\begin{exercise}
+\label{BD:ex:approxtau}
+Consider the model fit in section~\ref{SS:biglm} as initial fit to an iterative algorithm for a rank-based fit using Wilcoxon step scores.
+An initial estimate of the scale parameter is needed ---
+calculate an estimate using the \citet{ah84} approximation of $\tau$ discussed in section~\ref{sect:bd_tauhat} (Equation~\ref{E:bingamma}). 
+\end{exercise}

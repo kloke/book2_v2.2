@@ -1,0 +1,180 @@
+\section{Big Data Packages}
+\label{S:bigData_packages}
+
+
+In this section we discuss some of the R packages we have encountered which we use in our big data application.
+There are undoubtably many more useful packages available.\footnote{See, for example, Large memory and out-of-memory data in the High Performance Computing TaskView on CRAN: \texttt{cran.r-project.org/web/views/HighPerformanceComputing.html}}
+
+Packages we discuss in the comming sections include:
+\begin{itemize}
+\item \texttt{data.table} \citep{data.table} - used for data processing; fast reads and writes
+\item \texttt{biglm} \citep{biglm} - big data algorithm for least squares
+\item \texttt{dbplot} \citep{dbplot} - big data graphics; seemless calls to spark
+\item \texttt{dplyr} \citep{dplyr} - data processing;  seemless calls to spark
+\end{itemize}
+
+In this Chapter we will use the package \verb|data.table|\index{R package!data.table} \citep{data.table} to illustrate the computation of the step scores discussed in Section~\ref{S:bigData_scores}.
+While we have delayed this discussion to the present Chapter on big data we want to note that this package offers a convenient syntax for data processing (for datasets of all sizes); e.g., merge, subsetting, processing by a group variable.  By default the package uses multiple cores for parallel processes.\footnote{See \texttt{help(getDTthreads)}.}
+Note: some R packages have options to connect to an external database or spark.\footnote{We do much of the analysis in this section in memory.  Advanced R users familiar with out of memory analyses should have little difficulty translating into an out of memory solution for the methods discussed.}
+
+\subsection{\texttt{data.table::fread}, \texttt{fwrite}}
+\label{SS:freadfwrite}
+
+<<echo=FALSE>>=
+flights14 <- read.csv('data/flights14.csv')
+@
+
+In subsection~\ref{SS:data.table} we use the package \verb|data.table|\index{R package!data.table} \citep{data.table} to compute the step scores discussed in Section~\ref{S:bigData_scores}.
+In this subsection we illustrate the package's fast read and fast write functions, \verb|fread| and \verb|fwrite|, respectively.
+The function \verb|fread| has similiar arguments to the \verb|read.csv| function in base R.
+We will illustrate the amount of time used by the two methods to read in a dataset with dimensions given in the following code segment.
+<<>>=
+dim(flights14)
+@
+
+We have downloaded the file \verb|flights14.csv|\footnote{raw.githubusercontent.com/Rdatatable/data.table/master/vignettes/flights14.csv} into a local directory \verb|data|.
+The following code segment demostrates the \verb|system.time| to read the file using each of \verb|read.csv| in core R and \verb|fread| in \verb|data.table|.
+
+<<>>=
+system.time(read.csv('data/flights14.csv'))
+system.time(fread('data/flights14.csv'))
+@
+Even with about a quarter of a million records, \verb|fread| appears to be much faster than \verb|read.csv|.  With larger datasets the difference may be even more dramatic.
+
+\begin{example}[xy7]
+\label{eg:xy7}
+In the next code chunk we generate a dataset which will be used as an example throughout this Chapter.
+The example briefly illustrates the use of \verb|fwrite|.
+
+%{\bf UPDATE n}
+
+<<>>=
+library(data.table)
+library(mvtnorm)
+
+set.seed(20221022)
+
+n <- 10^7
+beta <- c(3,1.5,0,0,2,0,0,0)
+p <- length(beta)
+Sigma_x <- 0.5^abs(outer(1:p,1:p,'-'))
+x <- rmvnorm(n,sigma=Sigma_x)
+
+n1 <- 0.5*n
+n2 <- n-n1
+e <- sample(c(rcn(n1,0.1,10),rcnx100(n2)))
+
+y <- drop(round(x%*%beta + e,3))
+x <- round(x,2)
+
+xy <- data.frame(x0=1,x,y)
+fwrite(xy,file='data/xy7.csv')
+@
+Note: the \verb|x|'s are measured to 2 decimal places and \verb|y| to 3.
+        \rule{1.5mm}{1.5mm}
+\end{example}
+
+\subsection{\texttt{biglm}}
+\label{SS:biglm}
+
+In this subsection we illustrate the use of \verb|biglm|\index{R package!biglm} \citep{biglm} which implements a big data algorithm so that that the amount of data in memory is a function of $p$ rather than of $N$. 
+For comparison we also include a call to the core R function \verb|lm|.
+Later in the Chapter we use \verb|biglm| in the computation of the step scores estimate of $\bbeta$ discussed in \ref{S:bigData_scores}.
+
+
+<<<>>=
+library(biglm)
+f_ <- formula(y~X1+X2+X3+X4+X5+X6+X7+X8)
+fito <- lm(f_,data=xy)
+fitb <- biglm(f_,data=xy)
+print(summary(fitb),digits=4)
+@
+
+<<echo=FALSE>>=
+#xy <- fread('data/xy7.csv')
+#is.data.table(xy)
+#x <- xy[,-'y']
+#y <- xy[,'y']
+## rm(xy)
+##xy[,'r0'] <- xy[,'y'] - cbind(1,as.matrix(xy[,1:8])) %*% coef(fitb)
+@
+
+\subsection{Computation of Step Scores via \texttt{data.table}}
+\label{SS:data.table}
+The package \verb|data.table|\index{R package!data.table} \citep{data.table} is used to compute the step scores discussed in Section~\ref{S:bigData_scores}; in this section we illustrate this computation.
+Briefly, a data table is a generalization of a data frame in base R, but also implements a convenient syntax for fast data processing.\footnote{See vignettes available at \texttt{https://cran.r-project.org/web/packages/data.table/}.}
+
+As an intial fit, considering computational speed, use an LS fit.
+For illustration consider the example of the previous section.
+In the following code segment we use the \verb|biglm| fit from the previous section as our inital fit and
+calculate the residuals.
+A data table is created with a single column for the residuals.
+<<>>=
+x1 <- cbind(1,x)
+ehat <- y-drop(as.matrix(x1)%*%coef(fitb))
+ehatDT <- data.table(ehat)
+@
+
+In the next segment we determine bin endpoints (breaks).
+The quantile function is used so that we have the same number of observations in each bin in our case due to $N$ being a multiple of $B$.  In general there should be approximately the same number in each bin.
+Notice we use a {\em fudge factor} to ensure the min and max are contained in a bin --- this is so \verb|cut| may be used without error.
+<<>>=
+B <- 1001 # number of breaks (number of bins + 1)
+breaks <- quantile(ehat,seq(0,1,length=B))
+# ensure min an max are contained in bin
+ind <- c(1,length(breaks))
+breaks[ind] <- breaks[ind] + 0.001*c(-1,1)
+breaks <- unique(breaks)
+@
+Next we bin the data.
+<<>>=
+ehatDT[,bin := cut(ehat,breaks,label=FALSE)]
+@
+Note: all bins contain the same number of observations in this case.
+
+We now illustrate the calculation of the scores using \verb|data.table|.
+Note: using repeated uses of the bracket (\verb|[]|) is referred to as {\em chaining}.\footnote{See \texttt{cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.html}.}
+We have two main steps in our calculation: 1. \verb|Low and High Rank| and 2. \verb|Score Calculation|; as specified by commments in the code chunk.
+
+We use the function \verb|getScoresNS| to indicate we do not wish our scores be scaled, instead we center manually as the last steps (center and scale the scores) in the Score Calculation step.
+
+<<>>=
+scores <- wscores  # use wilcoxon scores
+##### Low and High Rank #####
+# calculate bin counts and order by bin id
+scoreMat <- ehatDT[,.(count=.N),by=bin][order(bin)] 
+# high and low rank for the bin
+scoreMat[,rnkH := cumsum(count)][,rnkL := rnkH-count+1] 
+
+##### Score Calculation #####
+# high and low percentiles for the bin
+scoreMat[, `:=`(rnkH=rnkH/(n+1),rnkL=rnkL/(n+1))]  
+@
+<<results=hide>>=
+# raw scores
+scoreMat[,scrs := 0.5*(getScoresNS(scores,rnkH)+
+                       getScoresNS(scores,rnkL))]
+# center the scores
+m <- scoreMat[,sum(count*scrs)/n]
+scoreMat[,scrs := scrs - m]
+# scale the scores 
+sd <- sqrt(scoreMat[,sum(scrs*scrs*count/(n+1)) ])
+scoreMat[,scrs := scrs / sd]
+@
+<<>>=
+scoreMat
+@
+
+As we are using step scores, all of the observations within a bin use the same score.
+So, for example, the dispersion function (\ref{E:bd_disp}) may be calculated by merging \verb|ehatDT| and \verb|scoreMat| as illustrated next.
+Since, when using step scores, the score is constant within a bin, we may first sum the residuals within in a bin then merge.
+<<>>=
+# residual totals by bin
+ehatDT_sb <- ehatDT[,.(D=sum(ehat)),bin]  
+# merge scores with totals by bin
+dsDT <- merge(scoreMat,ehatDT_sb,by='bin',sort=FALSE)  
+# dispersion based on (inital) LS fit
+dsDT[,sum(D*scrs)]  
+@
+A Newton-type algorithm can be used to minimize the dispersion function with the scores updated at each step.
+

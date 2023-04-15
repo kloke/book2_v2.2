@@ -1,0 +1,103 @@
+\subsection{Estimation of Scale Parameters for Big Data}
+%\label{sect:bd_tauhat}}
+\label{sect:bd_tauhat}
+%To conduct inference estimates of the scale parameters $\tau_{\varphi_B}$ and $\tau_S$ are required.
+%\citet*{ksm87} developed a consistent estimator of $\tau_{\varphi_B}$ which has been shown to have
+%good small sample properties in many Monte Carlo studies; see \citet{ms91} for a review of such studies.
+%This estimator, though, depends on the empirical cdf of the differences of the residuals,
+%whose computation is slow for big data.
+Consider a kernel type density estimator of $\tau_{\varphi_B}$ developed by
+\citet{ah84} based on the residuals from a rank-based fit of a linear model (c.f. Section~5.2 of \citet*{th84}).
+We discuss estimation of $\tau_\varphi$
+via its reciprocal $\gamma_\varphi=1/\tau_\varphi$ --- the {\bf efficacy}\index{efficacy}\index{scale parameter, $\tau$}.
+
+Using integration by parts, the efficacy 
+%(\ref{efficacy}), 
+can be written as
+\begin{displaymath}
+	\gamma_{\varphi_B} = \int_{-\infty}^\infty \varphi^\prime [F(x)]f(x) dF(x).
+\end{displaymath}
+Let $F_N$ denote the empirical distribution function of the residuals $\widehat{e}_1, \ldots ,\widehat{e}_N$;
+i.e., $F_N(t) = \frac{1}{N} \sum_{i=1}^N I(e_i < t)$ where $I(\cdot)$ is an indicator function.
+Then our estimator is the Stieltjes integral
+\begin{displaymath}
+	\widehat{\gamma}_{\varphi_B} = \int_{-\infty}^\infty \varphi^\prime [F_N(x)]f_N(x) dF_N(x),
+\end{displaymath}
+where 
+\begin{displaymath}
+	f_N(x) = \frac{1}{Nh_N}\sum_{i=1}^Nw\left(\frac{x-\widehat{e}_i}{h_N}\right)
+\end{displaymath}
+and the kernel $w$ is a symmetric density about the origin and $h_N$ is the bandwidth.
+%As an approximation we use (is this a weighted ASH density estimate???)
+%\begin{equation}
+%\label{E:approxf}
+%f_B(x) = \frac{1}{Nh_B} \sum_{i=1}^B n_i w \left( \frac{x - m_i}{h_B}\right)
+%\end{equation}
+%where $m_i$ is either the mid-point of the bin.
+For the step scores, using the fact that $F_N$ is the empirical distribution function of the residuals, it follows that
+\begin{eqnarray}
+	\widehat{\gamma}_{\varphi_B} & = & \frac{1}{N^2h_N} \sum_{i=1}^N \sum_{j=1}^N
+	\varphi^\prime [F_N(\widehat{e}_j)]w\left(\frac{\widehat{e}_j-\widehat{e}_i}{h_N}\right) \nonumber \\
+	&=& 
+	\label{esteff2}
+	\frac{1}{N^2h_N} \sum_{l=1}^B s_l^\prime\sum_{i_l=1}^{n_l} \sum_{j=1}^N
+	w\left(\frac{\widehat{e}_j-\widehat{e}_{i_l}}{h_N}\right),
+\end{eqnarray}
+%(Joe - did you loose an $h_N$???)
+where for the last equality the sum is through the bins and $s_l^\prime$ denotes the constant derivative
+of $\varphi_B$ within bin $l$.  An estimator of $\tau_{\varphi_B}$ is $\widehat{\gamma}_{\varphi_B}^{-1}$.
+The same argument holds for the linear approximate scores.
+Hence, for our big data algorithm and for either the
+linear approximation scores or the step scores, a full ranking of the residuals is not needed.
+For implementation,  we use a varient of the data-driven bandwidth function \texttt{bw.nrd} in base R and the
+standard normal density function for the kernel.
+%We have developmental implementations using \verb|data.table| \citep{data.table} and \verb|Rcpp| \citep{Rcpp} available in \verb|bigRfit|.
+We have plans for implementations using \verb|data.table| and \verb|Rcpp| \citep{Rcpp}; information on developmental versions may be found at \verb|github.com/kloke/bigRfit|.
+
+For very large $N$, the estimator (\ref{esteff2}) can be slow to compute.
+As an approximation, consider
+%Using the approximation in (\ref{E:approxf}) we may estimate $\gamma$ as
+\begin{eqnarray}
+\label{E:bingamma}
+\widehat{\gamma}_{\varphi_B}^B
+	&\dot =& 
+	\frac{1}{N^2 h_N} \sum_{i=1}^B s_i n_i \sum_{j=1}^B  n_j w \left( \frac{m_j - m_i}{h_N}\right)
+\end{eqnarray}
+where $m_i$ is the mid-point and $n_i$ is the count for bin $i$.
+In \verb|bigRfit|, the function \verb|tauhatDT| may be used to calculate the approximate estimate \ref{E:bingamma}.
+%Note: \verb|approxtauDT| requires $B^2$ observations so if using a lot of bins (too many for $B^2$ observations to fit in memory) one may want to use \verb|approxtauRcpp| for \ref{E:bingamma} or \verb|gettauRcpp| for \ref{esteff2}.
+%We also implement an approximation to the IQR and standard deviation in $h_N$ using the mid points.
+
+%{\bf CHECK below}
+Based on a small simulation study, for large $B$ (e.g. $B = 1000$)\footnote{In the next subsection we discuss how the there is little loss in efficincy, relative to the full ranking, when using bins in the upper 100s or 1000, suggesting 1000 is a large number of bins for most practical purposes.}
+the estimator (\ref{E:bingamma}) provides a good approximation 
+and is much faster to compute 
+than (\ref{esteff2}) 
+for big data (e.g., $N \ge 10000$).
+At the time of writing, we are not aware of a proof of consistancy of this approximation estimator and consider it an open problem.
+However, intuitively, it suggests that an estimate of the density based on $B=1000$ bins is close to the one based on the enitre dataset.
+
+Another option to decrease computation time is to notice that bins far part will have $w \dot = 0$.  
+Since the bins offer a partial sort to the data, and we may loop through them in order, 
+we need only consider observations in bins which are close (e.g. where $w > \epsilon_h$).
+This method could be applied to either (\ref{esteff2}) or (\ref{E:bingamma}).
+
+%Next consider estimation of the scale parameter $\tau_S$.
+Estimation of the scale parameter $\tau_S$ is given by
+%In a large comparative simulation study, \citet{ms84} showed that the estimator that is 
+%proportional to the length of a confidence interval 
+%for the median in a location
+%problem possessed very good small sample properties compared to other estimators.
+%For linear models, this estimator is based on the residuals and it is defined by
+\begin{equation}
+	\label{bdtauS}
+\widehat{\tau}_S = \frac{\sqrt{N}}{\sqrt{N-p-1}}\frac{\sqrt{N}[\widehat{e}_{(N-c)} - \widehat{e}_{(c+1)}]}{2z_{\alpha/2}},
+\end{equation}
+where $c$ is the greatest integer less than or equal to $(N/2) - z_{\alpha/2}\sqrt{N/4} - 0.5$,
+$z_{\alpha/2} = \Phi^{-1}(1- \alpha/2)$, and $\Phi$ is the cdf of a standard normal random variable.
+%In their study, \citet{ms84}  showed that the best results were obtained with intervals of confidence 95\%; i.e., $\alpha = 0.05$.
+For our big data algorithm, we know the bins containing $\widehat{e}_{(N-c)}$ and $ \widehat{e}_{(c+1)}$.
+%For linear models, $\widehat{\tau}_S$ is a consistent estimator of $\tau_S$; see \citet{hm11}.
+
+We have discussed a number of ways in which computational requirements can be reduced using binned residuals rather than a full ranking of the residuals.  
+
