@@ -34,6 +34,9 @@
 \usepackage[utf8]{inputenc}
 \usepackage{defs}
 
+%\usepackage{fdsymbol}
+\usepackage{newunicodechar}
+
 \usepackage{color}
 \newcommand{\purple}[1]{\textcolor[rgb]{0.50,0.00,0.50}{#1}}
 
@@ -138,6 +141,11 @@ load('./data/sim_class2.rda')
 
 <<echo=false>>=
 options(width=60)
+#options(pillar.max_footer_lines=1)
+options(pillar.subtle=FALSE)
+options(pillar.neg=FALSE)
+options(pillar.advice=FALSE)
+options(pillar.max_footer_lines=0)
 @
 
 %\epigraph{Do you copy? Shut down all the garbage mashers on the Detention Level! Shut down all the garbage mashers on the Detention Level!}{Luke Skywalker, Star Wars}
