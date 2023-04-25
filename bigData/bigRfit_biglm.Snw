@@ -1,8 +1,10 @@
 \section{{bigRreg}}
 \label{S:bigRreg}
+\index{R package!{\tt bigRfit}}
 
 As mentioned previously, we are developmenting several different implemenations of the rank-based methods discussed in Section~\ref{S:bigData_scores}.
-In this section we discuss an implementation, in development, which uses \verb|biglm| \citep{biglm}.  
+In this section we discuss an implementation, in development, which uses \verb|biglm| \citep{biglm}.  \index{R package!{\tt biglm}}
+
 At the time of writing, this implmentation only calls \verb|biglm| to compute the projection once per iteration; i.e., does not process the projection in steps.\footnote{An implementation which processes the projection in chunks seems possible but would require a number of modifications to the current code.  Advanced R users with experience implementing out of memory regression using \texttt{biglm} may be able to modify the code (under GPL) for an out of memory solution rank-based regression solution.}
 
 <<>>=

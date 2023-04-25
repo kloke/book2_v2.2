@@ -13,7 +13,7 @@ Packages we discuss in the comming sections include:
 \item \texttt{dplyr} \citep{dplyr} - data processing;  seemless calls to spark
 \end{itemize}
 
-In this Chapter we will use the package \verb|data.table|\index{R package!data.table} \citep{data.table} to illustrate the computation of the step scores discussed in Section~\ref{S:bigData_scores}.
+In this Chapter we will use the package \verb|data.table|\index{R package!{\tt data.table}} \citep{data.table} to illustrate the computation of the step scores discussed in Section~\ref{S:bigData_scores}.
 While we have delayed this discussion to the present Chapter on big data we want to note that this package offers a convenient syntax for data processing (for datasets of all sizes); e.g., merge, subsetting, processing by a group variable.  By default the package uses multiple cores for parallel processes.\footnote{See \texttt{help(getDTthreads)}.}
 Note: some R packages have options to connect to an external database or spark.\footnote{We do much of the analysis in this section in memory.  Advanced R users familiar with out of memory analyses should have little difficulty translating into an out of memory solution for the methods discussed.}
 
@@ -24,7 +24,7 @@ Note: some R packages have options to connect to an external database or spark.\
 flights14 <- read.csv('data/flights14.csv')
 @
 
-In subsection~\ref{SS:data.table} we use the package \verb|data.table|\index{R package!data.table} \citep{data.table} to compute the step scores discussed in Section~\ref{S:bigData_scores}.
+In subsection~\ref{SS:data.table} we use the package \verb|data.table|\index{R package!{\tt data.table}} \citep{data.table} to compute the step scores discussed in Section~\ref{S:bigData_scores}.
 In this subsection we illustrate the package's fast read and fast write functions, \verb|fread| and \verb|fwrite|, respectively.
 The function \verb|fread| has similiar arguments to the \verb|read.csv| function in base R.
 We will illustrate the amount of time used by the two methods to read in a dataset with dimensions given in the following code segment.
@@ -77,7 +77,7 @@ Note: the \verb|x|'s are measured to 2 decimal places and \verb|y| to 3.
 \subsection{\texttt{biglm}}
 \label{SS:biglm}
 
-In this subsection we illustrate the use of \verb|biglm|\index{R package!biglm} \citep{biglm} which implements a big data algorithm so that that the amount of data in memory is a function of $p$ rather than of $N$. 
+In this subsection we illustrate the use of \verb|biglm|\index{R package!{\tt biglm}} \citep{biglm} which implements a big data algorithm so that that the amount of data in memory is a function of $p$ rather than of $N$. 
 For comparison we also include a call to the core R function \verb|lm|.
 Later in the Chapter we use \verb|biglm| in the computation of the step scores estimate of $\bbeta$ discussed in \ref{S:bigData_scores}.
 
@@ -101,7 +101,7 @@ print(summary(fitb),digits=4)
 
 \subsection{Computation of Step Scores via \texttt{data.table}}
 \label{SS:data.table}
-The package \verb|data.table|\index{R package!data.table} \citep{data.table} is used to compute the step scores discussed in Section~\ref{S:bigData_scores}; in this section we illustrate this computation.
+The package \verb|data.table|\index{R package!{\tt data.table}} \citep{data.table} is used to compute the step scores discussed in Section~\ref{S:bigData_scores}; in this section we illustrate this computation.
 Briefly, a data table is a generalization of a data frame in base R, but also implements a convenient syntax for fast data processing.\footnote{See vignettes available at \texttt{https://cran.r-project.org/web/packages/data.table/}.}
 
 As an intial fit, considering computational speed, use an LS fit.

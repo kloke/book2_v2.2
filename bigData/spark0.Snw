@@ -3,7 +3,7 @@
 Spark was designed for large-scale data processing and can be run on a single computer or on a large cluster of compute nodes.
 When run with multiple cores (or on multiple nodes) data are able to be processed in parallel.
 There are several interfaces to Spark, including PySpark, SparkR, and sparklyr.  
-We make use of the \verb|sparklyr| \citep{sparklyr} R interface to Spark.
+We make use of the \verb|sparklyr| \citep{sparklyr}\index{R package!{\tt sparklyr}} R interface to Spark.
 General references to Spark include  {\em Spark the Definitive Guide} \citep{sparkbook} and {\em Learning Spark} \citep{learnsparkbook}.
 As the software is constantly being developed, it is recommend to refer to the official spark documentation \texttt{spark.apache.org}.
 {\em Mastering Spark with R} \citep{sparklyrbook} offers an introduction to using the \verb|sparklyr| \citep{sparklyr} package.
@@ -73,11 +73,11 @@ Next, we provide an overview of \verb|dbplot|.
 
 \subsection{\texttt{dbplot}}
 
-The package \verb|dbplot| \citep{dbplot} may be used for graphics of big datasets
+The package \verb|dbplot| \citep{dbplot} \index{R package!{\tt dbplot}} may be used for graphics of big datasets
 (e.g., in a SQL database or spark data frame).
 When used on a spark data frame via \verb|sparklyr|, the calculations of the summary statistics for the plot are performed in spark with the required summaries being sent back to R for graphing.  
 For big data this method is preferred as a relatively small amount of data (summary statistics) are then read into R for graphing instead of the entire dataset.
-Under the hood, the \verb|dplyr| \citep{dplyr} interface is used to create the summary statistics in spark and \verb|ggplot2| \citep{ggplot2} is used to create the graphic in R.
+Under the hood, the \verb|dplyr| \citep{dplyr} interface is used to create the summary statistics in spark and \verb|ggplot2| \citep{ggplot2} \index{R package!{\tt ggplot2}} is used to create the graphic in R.
 
 As an example consider Figure~\ref{F:raster} were \verb|y| versus \verb|x1| from our data frame \verb|d| are plotted. 
 By default, a $100 \times 100$ grid is created and the number of records in each rectangle are counted (in spark) and then returned to R.  A graphic is then produced in R using \verb|ggplot2|.
@@ -111,7 +111,7 @@ my_raster_plot <- function(data,x,y, fill=n(),resolution=100,complete=FALSE) {
 \subsection{Machine Learning Tools}
 
 Spark,
-along with the \verb|sparklyr| interface,
+along with the \verb|sparklyr|\index{R package!{\tt sparklyr}} interface,
  offer a wide range of machine learning tools for distributed data.
 Modeling functions in \verb|sparklry| use a familiar syntax allowing the user to specify a \verb|model| which is convenient for data analysts coming to spark from R.
 For example, the function \verb|ml_random_forest| may be used to fit random forest models previously discussed with the data and computations in spark.

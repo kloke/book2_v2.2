@@ -2,6 +2,7 @@
 \label{S:1stepWsparklyr}
 
 In this section we illustrate a one-step Wilcoxon rank-based estimation for a linear regression problem using \verb|sparklyr|.
+\index{R package!{\tt sparklyr}}
 
 <<echo=FALSE>>=
 library(sparklyr)
